@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a3a2a">
 <title>Workout Tracker</title>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('wt_theme') || 'dark'); })();</script>
 <link rel="manifest" href="manifest.json">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,10 +26,29 @@
   --done-bg: #2e7d32;
   --done-text: #a5d6a7;
   --danger: #ef5350;
+  --input-bg: rgba(255,255,255,0.07);
+  --row-sep: rgba(255,255,255,0.05);
+  --row-hover: rgba(255,255,255,0.04);
+}
+
+html[data-theme="light"] {
+  --bg: #f0f4f1;
+  --card: #ffffff;
+  --border: #b0d4b8;
+  --text: #1b2e1f;
+  --muted: #4a7856;
+  --accent: #2e7d32;
+  --done-bg: #2e7d32;
+  --done-text: #e8f5e9;
+  --danger: #c62828;
+  --input-bg: rgba(0,0,0,0.05);
+  --row-sep: rgba(0,0,0,0.08);
+  --row-hover: rgba(0,0,0,0.04);
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 18px;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -51,7 +71,7 @@ body {
   top: 0;
   z-index: 10;
 }
-.header h1 { font-size: 1.15rem; font-weight: 700; flex: 1; }
+.header h1 { font-size: 1.3rem; font-weight: 700; flex: 1; }
 .back-btn {
   background: none; border: none;
   color: var(--text); font-size: 1.8rem;
@@ -80,13 +100,13 @@ body {
 .session-card.erg   { background: var(--erg-color);   color: #001b2e; }
 .session-card.water { background: var(--water-color); color: #002b30; }
 .session-card.rest  { background: var(--rest-color);  color: #e0e0e0; }
-.s-num  { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; opacity: 0.6; letter-spacing: 0.08em; }
-.s-name { font-size: 1.05rem; font-weight: 800; margin: 1px 0 3px; }
-.s-desc { font-size: 0.82rem; opacity: 0.8; }
+.s-num  { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; opacity: 0.6; letter-spacing: 0.08em; }
+.s-name { font-size: 1.2rem; font-weight: 800; margin: 1px 0 3px; }
+.s-desc { font-size: 0.95rem; opacity: 0.8; }
 .s-done {
   position: absolute; top: 12px; right: 14px;
   background: rgba(0,0,0,0.18); border-radius: 20px;
-  padding: 2px 10px; font-size: 0.72rem; font-weight: 700;
+  padding: 2px 10px; font-size: 0.85rem; font-weight: 700;
 }
 
 /* ── Date Picker Modal ── */
@@ -109,16 +129,16 @@ body {
   display: flex; flex-direction: column; gap: 16px;
 }
 .modal-box h3 { font-size: 1.1rem; font-weight: 700; }
-.modal-subtitle { font-size: 0.85rem; color: var(--muted); margin-top: -8px; }
+.modal-subtitle { font-size: 0.95rem; color: var(--muted); margin-top: -8px; }
 .date-input {
-  background: rgba(255,255,255,0.07);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text);
   font-size: 1.05rem;
   padding: 12px 14px;
   width: 100%;
-  color-scheme: dark;
+  color-scheme: dark light;
 }
 .date-input:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .modal-actions { display: flex; gap: 10px; }
@@ -142,11 +162,11 @@ body {
   color: var(--gym-color);
   background: none; border: 1px solid rgba(249,168,37,0.35);
   border-radius: 10px; padding: 10px 16px; margin-bottom: 14px;
-  cursor: pointer; font-size: 0.88rem; font-weight: 600; width: 100%;
+  cursor: pointer; font-size: 0.95rem; font-weight: 600; width: 100%;
   -webkit-tap-highlight-color: transparent;
 }
 .session-date-label {
-  text-align: center; font-size: 0.75rem;
+  text-align: center; font-size: 0.9rem;
   color: var(--muted); margin-bottom: 12px;
 }
 
@@ -161,22 +181,22 @@ body {
   display: flex; align-items: center; gap: 10px;
   -webkit-tap-highlight-color: transparent; user-select: none;
 }
-.exercise-header:active { background: rgba(255,255,255,0.04); }
+.exercise-header:active { background: var(--row-hover); }
 .ex-code {
   background: var(--accent); color: #000;
   border-radius: 6px; padding: 3px 7px;
-  font-size: 0.75rem; font-weight: 800;
-  min-width: 32px; text-align: center; flex-shrink: 0;
+  font-size: 0.88rem; font-weight: 800;
+  min-width: 36px; text-align: center; flex-shrink: 0;
 }
 .exercise-card.all-done .ex-code { background: var(--done-bg); color: var(--done-text); }
 .exercise-card.all-done .ex-name { color: var(--done-text); }
 .exercise-card.all-done .ex-meta { opacity: 0.5; }
 .exercise-card.all-done .ex-progress { color: var(--done-text); font-weight: 800; }
 .ex-info { flex: 1; min-width: 0; }
-.ex-name { font-size: 0.95rem; font-weight: 700; }
-.ex-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-.ex-progress { font-size: 0.8rem; color: var(--muted); flex-shrink: 0; white-space: nowrap; }
-.ex-chevron { color: var(--muted); flex-shrink: 0; font-size: 0.7rem; transition: transform 0.2s; }
+.ex-name { font-size: 1.05rem; font-weight: 700; }
+.ex-meta { font-size: 0.88rem; color: var(--muted); margin-top: 2px; }
+.ex-progress { font-size: 0.92rem; color: var(--muted); flex-shrink: 0; white-space: nowrap; }
+.ex-chevron { color: var(--muted); flex-shrink: 0; font-size: 0.82rem; transition: transform 0.2s; }
 .exercise-card.open .ex-chevron { transform: rotate(180deg); }
 .exercise-body { display: none; border-top: 1px solid var(--border); }
 .exercise-card.open .exercise-body { display: block; }
@@ -185,23 +205,23 @@ body {
 .set-row {
   display: grid; grid-template-columns: 28px 1fr 1fr 48px;
   align-items: center; gap: 8px; padding: 9px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--row-sep);
   transition: opacity 0.2s;
 }
 .set-row:last-of-type { border-bottom: none; }
 .set-row.done { opacity: 0.55; }
-.set-num { font-size: 0.78rem; color: var(--muted); font-weight: 700; }
+.set-num { font-size: 0.92rem; color: var(--muted); font-weight: 700; }
 .input-wrap { display: flex; flex-direction: column; align-items: center; }
 .set-input {
-  background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+  background: var(--input-bg); border: 1px solid var(--border);
   border-radius: 8px; color: var(--text); font-size: 1rem;
   padding: 7px 4px; text-align: center; width: 100%;
   -webkit-appearance: none; appearance: none;
 }
 .set-input:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .set-input:disabled { opacity: 0.5; }
-.set-input::placeholder { color: var(--muted); font-size: 0.75rem; }
-.input-label { font-size: 0.6rem; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+.set-input::placeholder { color: var(--muted); font-size: 0.88rem; }
+.input-label { font-size: 0.78rem; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
 .check-btn {
   width: 44px; height: 44px; border-radius: 50%;
   border: 2px solid var(--border); background: none;
@@ -212,7 +232,7 @@ body {
 }
 .check-btn.done { background: var(--done-bg); border-color: var(--done-bg); color: #fff; }
 .set-hint {
-  grid-column: 2 / 4; font-size: 0.68rem;
+  grid-column: 2 / 4; font-size: 0.82rem;
   color: var(--muted); text-align: center; padding-bottom: 2px; opacity: 0.75;
 }
 
@@ -252,7 +272,7 @@ body {
 }
 .session-desc-box strong {
   color: var(--text); display: block; margin-bottom: 10px;
-  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.1em;
 }
 .mark-done-btn {
   background: var(--accent); color: #000; border: none;
@@ -269,7 +289,7 @@ body {
 }
 .remove-entry-btn.visible { display: block; }
 .session-notes {
-  background: rgba(255,255,255,0.07);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--text);
@@ -291,13 +311,13 @@ body {
   align-items: center; justify-content: center; gap: 12px;
 }
 #timer-overlay.visible { display: flex; }
-.timer-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
+.timer-label { font-size: 0.95rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
 .timer-display {
   font-size: 7rem; font-weight: 100; letter-spacing: -4px;
   color: var(--text); font-variant-numeric: tabular-nums; line-height: 1;
 }
 .timer-display.urgent { color: var(--danger); }
-.timer-next { font-size: 0.8rem; color: var(--muted); min-height: 1.2em; }
+.timer-next { font-size: 0.95rem; color: var(--muted); min-height: 1.2em; }
 .timer-controls { display: flex; gap: 10px; margin-top: 12px; }
 .timer-adj {
   background: var(--card); border: 1px solid var(--border);
@@ -350,13 +370,13 @@ body {
   padding: 8px 16px; font-size: 1rem; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.cal-month-label { font-size: 1.05rem; font-weight: 700; }
+.cal-month-label { font-size: 1.2rem; font-weight: 700; }
 .cal-grid {
   display: grid; grid-template-columns: repeat(7, 1fr);
   gap: 4px;
 }
 .cal-header-cell {
-  text-align: center; font-size: 0.68rem; font-weight: 700;
+  text-align: center; font-size: 0.82rem; font-weight: 700;
   color: var(--muted); padding: 4px 0; text-transform: uppercase;
 }
 .cal-day {
@@ -370,7 +390,7 @@ body {
 .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
 .cal-day.today { border-color: var(--accent); }
 .cal-day:not(.empty):active { border-color: var(--accent); }
-.cal-day-num { font-size: 0.8rem; font-weight: 600; }
+.cal-day-num { font-size: 0.95rem; font-weight: 600; }
 .cal-dots { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
 .cal-dot {
   width: 7px; height: 7px; border-radius: 50%;
@@ -395,27 +415,27 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 18px;
 }
-.day-detail-title { font-size: 1rem; font-weight: 700; }
+.day-detail-title { font-size: 1.1rem; font-weight: 700; }
 .day-detail-close {
   background: none; border: none; color: var(--muted);
   font-size: 1.4rem; cursor: pointer; padding: 0 4px;
 }
 .day-session-row {
   display: flex; align-items: center; justify-content: space-between;
-  background: rgba(255,255,255,0.04); border-radius: 12px;
+  background: var(--row-hover); border-radius: 12px;
   padding: 12px 14px; margin-bottom: 8px; gap: 12px;
 }
 .day-session-info { display: flex; align-items: center; gap: 10px; flex: 1; }
 .day-session-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.day-session-name { font-size: 0.9rem; font-weight: 600; }
-.day-session-meta { font-size: 0.75rem; color: var(--muted); }
+.day-session-name { font-size: 1rem; font-weight: 600; }
+.day-session-meta { font-size: 0.9rem; color: var(--muted); }
 .day-open-btn {
   background: var(--accent); color: #000; border: none;
-  border-radius: 8px; padding: 7px 14px; font-size: 0.8rem;
+  border-radius: 8px; padding: 9px 16px; font-size: 0.92rem;
   font-weight: 700; cursor: pointer; flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
 }
-.day-empty-msg { color: var(--muted); font-size: 0.9rem; text-align: center; padding: 20px; }
+.day-empty-msg { color: var(--muted); font-size: 1rem; text-align: center; padding: 20px; }
 
 /* ── Settings Screen ── */
 #settings-screen .header h1 { flex: 1; }
@@ -429,16 +449,16 @@ body {
   display: flex; flex-direction: column; gap: 14px;
 }
 .settings-section h2 {
-  font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
+  font-size: 0.9rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.1em; color: var(--muted); margin-bottom: 2px;
 }
 .settings-field { display: flex; flex-direction: column; gap: 6px; }
 .settings-label {
-  font-size: 0.78rem; color: var(--muted); font-weight: 600;
+  font-size: 0.9rem; color: var(--muted); font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
 .settings-input {
-  background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+  background: var(--input-bg); border: 1px solid var(--border);
   border-radius: 10px; color: var(--text); font-size: 0.95rem;
   padding: 11px 14px; width: 100%; font-family: monospace;
 }
@@ -453,7 +473,7 @@ body {
 .settings-btn.danger    { background: none; border: 1px solid var(--danger); color: var(--danger); }
 .settings-btn.secondary { background: none; border: 1px solid var(--border); color: var(--muted); }
 .sync-status-line {
-  font-size: 0.78rem; color: var(--muted); text-align: center; min-height: 1.2em; padding: 2px 0;
+  font-size: 0.9rem; color: var(--muted); text-align: center; min-height: 1.2em; padding: 2px 0;
 }
 .sync-status-line.ok    { color: var(--accent); }
 .sync-status-line.error { color: var(--danger); }
@@ -461,7 +481,7 @@ body {
 
 /* ── Home sync banner ── */
 #home-sync-banner {
-  font-size: 0.72rem; color: var(--muted);
+  font-size: 0.88rem; color: var(--muted);
   text-align: center; padding: 4px 20px 0; min-height: 18px;
 }
 #home-sync-banner.ok   { color: var(--accent); }
@@ -476,6 +496,7 @@ body {
   <div class="header">
     <h1>🚣 Workout Tracker</h1>
     <button class="icon-btn" onclick="openCalendar()" title="History">📅</button>
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙</button>
     <button class="icon-btn" onclick="openSettings()" title="Sync settings">⚙</button>
   </div>
   <div id="home-sync-banner"></div>
@@ -1507,8 +1528,25 @@ function beep() {
   } catch (_) {}
 }
 
+// ─── THEME ────────────────────────────────────────────────────────────────────
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next    = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('wt_theme', next);
+  document.getElementById('theme-btn').textContent = next === 'dark' ? '🌙' : '☀️';
+}
+
+function applyThemeIcon() {
+  const t = document.documentElement.getAttribute('data-theme') || 'dark';
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '🌙' : '☀️';
+}
+
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 
+applyThemeIcon();
 renderHome();
 syncOnLoad();
 
