@@ -261,6 +261,13 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .mark-done-btn.done { background: var(--done-bg); color: var(--done-text); }
+.remove-entry-btn {
+  background: none; border: 1px solid var(--danger);
+  color: var(--danger); border-radius: 24px;
+  padding: 10px 28px; font-size: 0.85rem; cursor: pointer;
+  display: none; -webkit-tap-highlight-color: transparent;
+}
+.remove-entry-btn.visible { display: block; }
 .session-notes {
   background: rgba(255,255,255,0.07);
   border: 1px solid var(--border);
@@ -447,6 +454,7 @@ body {
     <div class="session-desc-box" id="simple-desc"></div>
     <textarea class="session-notes" id="session-notes" placeholder="Notes (splits, conditions, how it felt...)" oninput="saveSimpleNotes()"></textarea>
     <button class="mark-done-btn" id="mark-done-btn" onclick="markSimpleDone()">Mark Complete</button>
+    <button class="remove-entry-btn" id="remove-entry-btn" onclick="removeSimpleEntry()">Remove Entry</button>
   </div>
 </div>
 
@@ -919,6 +927,7 @@ function openSimpleSession(session) {
   btn.className   = `mark-done-btn${done ? ' done' : ''}`;
 
   document.getElementById('session-notes').value = saved?.notes || '';
+  document.getElementById('remove-entry-btn').classList.toggle('visible', done);
   showScreen('simple-screen');
 }
 
@@ -928,17 +937,29 @@ function markSimpleDone() {
   const notes = document.getElementById('session-notes').value;
 
   if (btn.classList.contains('done')) {
-    // Undo completion — keep notes
+    // Undo completion — keep notes but remove completedAt
     localStorage.setItem(simpleKey(currentSession.id), JSON.stringify({ notes }));
     btn.textContent = 'Mark Complete';
     btn.classList.remove('done');
+    document.getElementById('remove-entry-btn').classList.remove('visible');
     return;
   }
 
   localStorage.setItem(simpleKey(currentSession.id), JSON.stringify({ completedAt: new Date().toISOString(), notes }));
   btn.textContent = '✓ Completed — tap to undo';
   btn.classList.add('done');
+  document.getElementById('remove-entry-btn').classList.add('visible');
   beep();
+}
+
+function removeSimpleEntry() {
+  if (!currentSession || currentSession.type === 'rest') return;
+  localStorage.removeItem(simpleKey(currentSession.id));
+  const btn = document.getElementById('mark-done-btn');
+  btn.textContent = 'Mark Complete';
+  btn.classList.remove('done');
+  document.getElementById('remove-entry-btn').classList.remove('visible');
+  document.getElementById('session-notes').value = '';
 }
 
 function saveSimpleNotes() {
