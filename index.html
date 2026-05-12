@@ -735,7 +735,7 @@ function openGymSession(session) {
   const lastData  = getLastGymData(session.gym);
   const saved     = loadGym(session.gym);
 
-  if (saved && !saved._completedAt) {
+  if (saved) {
     sessionData = saved;
   } else {
     sessionData = {};
