@@ -543,10 +543,10 @@ body {
                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
       </div>
       <div class="settings-field">
-        <label class="settings-label" for="gist-id-input">Gist ID</label>
+        <label class="settings-label" for="gist-id-input">Gist ID <span style="font-weight:400;text-transform:none;letter-spacing:0">(leave blank to auto-create)</span></label>
         <input id="gist-id-input" class="settings-input" type="text"
                autocomplete="off" autocorrect="off" spellcheck="false"
-               placeholder="e.g. a1b2c3d4e5f6...">
+               placeholder="Auto-created on first save">
       </div>
       <button class="settings-btn primary" onclick="saveAndSync()">Save &amp; Sync</button>
       <div class="sync-status-line" id="settings-sync-status">Not configured</div>
@@ -557,8 +557,8 @@ body {
       <h2>How to set up</h2>
       <p style="font-size:0.82rem;color:var(--muted);line-height:1.6">
         1. Create a GitHub Personal Access Token with <strong style="color:var(--text)">gist</strong> scope at github.com/settings/tokens<br><br>
-        2. Create a new secret Gist at gist.github.com — the content doesn't matter, just note the ID from the URL<br><br>
-        3. Paste both above and tap Save &amp; Sync
+        2. Paste it above and tap Save &amp; Sync — a secret Gist is created automatically<br><br>
+        3. On other devices: paste the same token and the Gist ID that appears after first sync
       </p>
     </div>
   </div>
@@ -1289,6 +1289,29 @@ function applyWtData(data) {
 
 // -- Gist API calls --
 
+async function gistCreate(pat) {
+  const res = await fetch('https://api.github.com/gists', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${pat}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    },
+    body: JSON.stringify({
+      description: 'Workout Tracker data',
+      public: false,
+      files: { 'workout-data.json': { content: '{}' } }
+    })
+  });
+  if (!res.ok) {
+    const msg = res.status === 401 ? 'Bad token (401)' : `Create error ${res.status}`;
+    throw new Error(msg);
+  }
+  const gist = await res.json();
+  return gist.id;
+}
+
 async function gistPull() {
   const cfg = getSyncConfig();
   if (!cfg) return;
@@ -1401,13 +1424,18 @@ function openSettings() {
 
 async function saveAndSync() {
   const pat    = document.getElementById('pat-input').value.trim();
-  const gistId = document.getElementById('gist-id-input').value.trim();
-  if (!pat || !gistId) { setSyncStatus('error', '⚠ Both fields are required'); return; }
-  saveSyncConfig(pat, gistId);
-  document.getElementById('sync-now-btn').style.display   = '';
-  document.getElementById('clear-sync-btn').style.display = '';
+  let   gistId = document.getElementById('gist-id-input').value.trim();
+  if (!pat) { setSyncStatus('error', '⚠ Token is required'); return; }
   setSyncStatus('busy', '⟳ Connecting...');
   try {
+    if (!gistId) {
+      setSyncStatus('busy', '⟳ Creating Gist...');
+      gistId = await gistCreate(pat);
+      document.getElementById('gist-id-input').value = gistId;
+    }
+    saveSyncConfig(pat, gistId);
+    document.getElementById('sync-now-btn').style.display   = '';
+    document.getElementById('clear-sync-btn').style.display = '';
     await gistPull();
     renderHome();
     await gistPush();
