@@ -260,7 +260,22 @@ body {
   font-size: 1rem; font-weight: 800; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.mark-done-btn.done { background: var(--done-bg); color: var(--done-text); cursor: default; }
+.mark-done-btn.done { background: var(--done-bg); color: var(--done-text); }
+.session-notes {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 12px 14px;
+  width: 100%; max-width: 380px;
+  min-height: 90px;
+  resize: vertical;
+}
+.session-notes:focus { outline: 2px solid var(--accent); border-color: transparent; }
+.session-notes::placeholder { color: var(--muted); }
 
 /* ── Rest Timer ── */
 #timer-overlay {
@@ -430,6 +445,7 @@ body {
   <div class="simple-body">
     <div class="session-icon" id="simple-icon"></div>
     <div class="session-desc-box" id="simple-desc"></div>
+    <textarea class="session-notes" id="session-notes" placeholder="Notes (splits, conditions, how it felt...)" oninput="saveSimpleNotes()"></textarea>
     <button class="mark-done-btn" id="mark-done-btn" onclick="markSimpleDone()">Mark Complete</button>
   </div>
 </div>
@@ -892,21 +908,46 @@ function openSimpleSession(session) {
   document.getElementById('simple-icon').textContent = session.icon || '•';
   document.getElementById('simple-desc').innerHTML =
     `<strong>${formatDate(sessionDate)}</strong>${session.desc || ''}`;
+
+  const raw = localStorage.getItem(simpleKey(session.id));
+  let saved = null;
+  try { saved = raw ? JSON.parse(raw) : null; } catch { saved = raw ? { completedAt: raw } : null; }
+
+  const done = session.type !== 'rest' && !!saved?.completedAt;
   const btn  = document.getElementById('mark-done-btn');
-  const done = session.type !== 'rest' && !!localStorage.getItem(simpleKey(session.id));
-  btn.textContent = done ? '✓ Completed' : 'Mark Complete';
+  btn.textContent = done ? '✓ Completed — tap to undo' : 'Mark Complete';
   btn.className   = `mark-done-btn${done ? ' done' : ''}`;
+
+  document.getElementById('session-notes').value = saved?.notes || '';
   showScreen('simple-screen');
 }
 
 function markSimpleDone() {
   if (!currentSession || currentSession.type === 'rest') return;
-  const btn = document.getElementById('mark-done-btn');
-  if (btn.classList.contains('done')) return;
-  localStorage.setItem(simpleKey(currentSession.id), new Date().toISOString());
-  btn.textContent = '✓ Completed';
+  const btn   = document.getElementById('mark-done-btn');
+  const notes = document.getElementById('session-notes').value;
+
+  if (btn.classList.contains('done')) {
+    // Undo completion — keep notes
+    localStorage.setItem(simpleKey(currentSession.id), JSON.stringify({ notes }));
+    btn.textContent = 'Mark Complete';
+    btn.classList.remove('done');
+    return;
+  }
+
+  localStorage.setItem(simpleKey(currentSession.id), JSON.stringify({ completedAt: new Date().toISOString(), notes }));
+  btn.textContent = '✓ Completed — tap to undo';
   btn.classList.add('done');
   beep();
+}
+
+function saveSimpleNotes() {
+  if (!currentSession) return;
+  const raw = localStorage.getItem(simpleKey(currentSession.id));
+  let saved = null;
+  try { saved = raw ? JSON.parse(raw) : null; } catch { saved = null; }
+  const notes = document.getElementById('session-notes').value;
+  localStorage.setItem(simpleKey(currentSession.id), JSON.stringify({ ...(saved || {}), notes }));
 }
 
 // ─── REST TIMER ───────────────────────────────────────────────────────────────
